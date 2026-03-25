@@ -1,6 +1,6 @@
-mod decryption;
-mod encryption;
-mod file_utils;
+pub mod decryption;
+pub mod encryption;
+pub mod file_utils;
 
 fn main() {
     println!("Hello, world!");
