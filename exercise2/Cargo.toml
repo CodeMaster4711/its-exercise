@@ -9,4 +9,4 @@ base64 = "0.21"
 rand = "0.8"
 anyhow = "1.0"
 block-padding = "0.3"
-ecb = { version = "0.1", features = ["alloc"] }
+aes-gcm = "0.10"

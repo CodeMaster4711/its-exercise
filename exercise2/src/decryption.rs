@@ -1,9 +1,8 @@
-use aes::cipher::{BlockDecryptMut, KeyInit};
+use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::{Aes256Gcm, Nonce};
 use anyhow::Result;
+use base64::{Engine, engine::general_purpose::STANDARD};
 use std::path::Path;
-
-const CIPHER_ALGORITHM: &str = "AES/ECB/PKCS5Padding";
-const ALGORITHM: &str = "AES";
 
 /// Read symmetric key from file and decode it base64.
 ///
@@ -11,7 +10,7 @@ const ALGORITHM: &str = "AES";
 /// * returns: symmetric SecretKey
 pub fn read_key<P: AsRef<Path>>(input_file: P) -> Result<Vec<u8>> {
     let encoded_key = std::fs::read_to_string(input_file)?;
-    let key = base64::decode(encoded_key)?;
+    let key = STANDARD.decode(encoded_key.trim())?;
     Ok(key)
 }
 
@@ -21,8 +20,12 @@ pub fn read_key<P: AsRef<Path>>(input_file: P) -> Result<Vec<u8>> {
 /// * `data`: byte Array to decrypt
 /// * returns: decrypted data
 pub fn decrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
-    let decrypted = ecb::Decryptor::<aes::Aes256>::new(key.into())
-        .decrypt_padded_vec_mut::<block_padding::Pkcs7>(data)
-        .map_err(|e| anyhow::anyhow!("Padding error: {:?}", e))?;
-    Ok(decrypted)
+    let (nonce_bytes, ciphertext) = data.split_at(12);
+    let nonce = Nonce::from_slice(nonce_bytes);
+
+    let cipher = Aes256Gcm::new(key.into());
+    let plaintext = cipher
+        .decrypt(nonce, ciphertext)
+        .map_err(|e| anyhow::anyhow!("Decrypt error: {:?}", e))?;
+    Ok(plaintext)
 }

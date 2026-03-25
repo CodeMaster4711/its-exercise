@@ -1,15 +1,10 @@
-use aes::Aes256;
-use aes::cipher::{BlockEncryptMut, KeyInit};
+use aes_gcm::aead::{Aead, KeyInit};
+use aes_gcm::{Aes256Gcm, Nonce};
 use anyhow::Result;
-use block_padding::Pkcs7;
-use ecb::Encryptor;
+use base64::{Engine, engine::general_purpose::STANDARD};
 use rand::RngCore;
 use rand::rngs::OsRng;
 use std::path::Path;
-
-const CIPHER_ALGORITHM: &str = "AES/ECB/PKCS5Padding";
-const ALGORITHM: &str = "AES";
-const KEY_SIZE: usize = 256;
 
 /// Generate a symmetric key with selected algorithm and key size.
 ///
@@ -26,8 +21,18 @@ pub fn generate_key() -> Result<Vec<u8>> {
 /// * `data`: byte Array to encrypt
 /// * returns: encrypted data
 pub fn encrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
-    let encrypted = Encryptor::<Aes256>::new(key.into()).encrypt_padded_vec_mut::<Pkcs7>(data);
-    Ok(encrypted)
+    let cipher = Aes256Gcm::new(key.into());
+    let mut nonce_bytes = [0u8; 12];
+    OsRng.fill_bytes(&mut nonce_bytes);
+    let nonce = Nonce::from_slice(&nonce_bytes);
+
+    let ciphertext = cipher
+        .encrypt(nonce, data)
+        .map_err(|e| anyhow::anyhow!("Encryption error: {:?}", e))?;
+
+    let mut result = nonce_bytes.to_vec();
+    result.extend_from_slice(&ciphertext);
+    Ok(result)
 }
 
 /// Save key base64 encoded in a file.
@@ -35,7 +40,7 @@ pub fn encrypt(key: &[u8], data: &[u8]) -> Result<Vec<u8>> {
 /// * `dest_file`: destination filename
 /// * `key`: SecretKey to save
 pub fn save_key<P: AsRef<Path>>(dest_file: P, key: &[u8]) -> Result<()> {
-    let encoded_key = base64::encode(key);
+    let encoded_key = STANDARD.encode(key);
     std::fs::write(dest_file, encoded_key)?;
     Ok(())
 }

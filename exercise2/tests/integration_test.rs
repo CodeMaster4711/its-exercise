@@ -16,11 +16,12 @@ fn encrypted_data_is_not_plaintext() {
 }
 
 #[test]
-fn encrypted_length_is_multiple_of_block_size() {
+fn encrypted_length_is_plaintext_plus_overhead() {
     let key = encryption::generate_key().unwrap();
     let plaintext = b"Hello, World!";
     let ciphertext = encryption::encrypt(&key, plaintext).unwrap();
-    assert_eq!(ciphertext.len() % 16, 0); // AES Blockgröße = 16 Bytes
+    // GCM: 12 Bytes Nonce + Plaintext + 16 Bytes Auth-Tag
+    assert_eq!(ciphertext.len(), plaintext.len() + 12 + 16);
 }
 
 #[test]
