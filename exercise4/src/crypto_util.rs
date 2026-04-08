@@ -68,9 +68,14 @@ pub fn generate_rsa_key_pair<P: AsRef<Path>>(
     let private_pem = private_key
         .to_pkcs8_pem(LineEnding::LF)
         .context("Failed to encode private key to PEM")?;
+    fs::write(&private_key_file, private_pem.as_bytes())
+        .context("Failed to write private key file")?;
+
     let public_pem = public_key
         .to_public_key_pem(LineEnding::LF)
         .context("Failed to encode public key to PEM")?;
+    fs::write(&public_key_file, public_pem.as_bytes())
+        .context("Failed to write public key file")?;
 
     Ok(())
 }
