@@ -3,6 +3,13 @@ use exercise4::digital_signature::{sign, verify};
 use std::fs;
 use tempfile::TempDir;
 
+fn init_tracing() {
+    let _ = tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_test_writer()
+        .try_init();
+}
+
 fn setup_temp_dir() -> TempDir {
     tempfile::tempdir().expect("Failed to create temp dir")
 }
@@ -17,6 +24,7 @@ fn generate_keys(dir: &TempDir) -> (std::path::PathBuf, std::path::PathBuf) {
 /// Kompletter Workflow: Key generieren → signieren → verifizieren
 #[test]
 fn test_full_sign_and_verify_workflow() {
+    init_tracing();
     let dir = setup_temp_dir();
     let (priv_path, pub_path) = generate_keys(&dir);
 
@@ -38,6 +46,7 @@ fn test_full_sign_and_verify_workflow() {
 /// Manipulation der Datei muss Verifikation fehlschlagen lassen
 #[test]
 fn test_tampered_file_fails_verification() {
+    init_tracing();
     let dir = setup_temp_dir();
     let (priv_path, pub_path) = generate_keys(&dir);
 
@@ -61,6 +70,7 @@ fn test_tampered_file_fails_verification() {
 /// Falscher Public Key muss Verifikation fehlschlagen lassen
 #[test]
 fn test_wrong_public_key_fails_verification() {
+    init_tracing();
     let dir = setup_temp_dir();
     let (priv_path, _) = generate_keys(&dir);
 
@@ -86,6 +96,7 @@ fn test_wrong_public_key_fails_verification() {
 /// Leere Datei signieren und verifizieren
 #[test]
 fn test_sign_and_verify_empty_file() {
+    init_tracing();
     let dir = setup_temp_dir();
     let (priv_path, pub_path) = generate_keys(&dir);
 
@@ -106,6 +117,7 @@ fn test_sign_and_verify_empty_file() {
 /// Binäre Daten signieren und verifizieren
 #[test]
 fn test_sign_and_verify_binary_data() {
+    init_tracing();
     let dir = setup_temp_dir();
     let (priv_path, pub_path) = generate_keys(&dir);
 
@@ -127,6 +139,7 @@ fn test_sign_and_verify_binary_data() {
 /// Gespeicherte Keys laden und wiederverwenden
 #[test]
 fn test_key_persistence_load_and_reuse() {
+    init_tracing();
     let dir = setup_temp_dir();
     let priv_path = dir.path().join("private.pem");
     let pub_path = dir.path().join("public.pem");
@@ -151,6 +164,7 @@ fn test_key_persistence_load_and_reuse() {
 /// Manipulierte Signatur muss fehlschlagen
 #[test]
 fn test_tampered_signature_fails_verification() {
+    init_tracing();
     let dir = setup_temp_dir();
     let (priv_path, pub_path) = generate_keys(&dir);
 

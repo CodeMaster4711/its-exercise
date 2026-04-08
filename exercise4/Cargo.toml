@@ -8,8 +8,10 @@ rsa = { version = "0.9", features = ["sha2"] }
 sha2 = "0.10"
 rand = "0.8"
 anyhow = "1.0"
+tracing = "0.1"
 base64 = "0.21"
 pem = "3.0"
 
 [dev-dependencies]
 tempfile = "3"
+tracing-subscriber = "0.3"

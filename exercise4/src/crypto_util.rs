@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use tracing::{debug, info};
 use base64::{Engine, engine::general_purpose::STANDARD};
 use rand::rngs::OsRng;
 use rsa::pkcs8::{
@@ -21,9 +22,11 @@ pub fn get_public_key<P: AsRef<Path>>(file: P) -> Result<RsaPublicKey> {
     // 1. Read the PEM file
     // 2. Parse the public key using rsa::pkcs8::DecodePublicKey
     // 3. Return the public key
+    info!("Loading public key from: {}", file.as_ref().display());
     let pem = fs::read_to_string(file).context("Failed to read public key file")?;
-    let key =
-        RsaPublicKey::from_public_key_pem(&pem).context("Failed to parse public key from PEM")?;
+    debug!("PEM file read ({} chars)", pem.len());
+    let key = RsaPublicKey::from_public_key_pem(&pem).context("Failed to parse public key from PEM")?;
+    info!("Public key loaded successfully");
     Ok(key)
 }
 
@@ -39,9 +42,11 @@ pub fn get_private_key<P: AsRef<Path>>(filename: P) -> Result<RsaPrivateKey> {
     // 1. Read the PEM file
     // 2. Parse the private key using rsa::pkcs8::DecodePrivateKey
     // 3. Return the private key
+    info!("Loading private key from: {}", filename.as_ref().display());
     let pem = fs::read_to_string(filename).context("Failed to read private key file")?;
-    let key =
-        RsaPrivateKey::from_pkcs8_pem(&pem).context("Failed to parse private key from PEM")?;
+    debug!("PEM file read ({} chars)", pem.len());
+    let key = RsaPrivateKey::from_pkcs8_pem(&pem).context("Failed to parse private key from PEM")?;
+    info!("Private key loaded successfully");
     Ok(key)
 }
 
@@ -60,22 +65,28 @@ pub fn generate_rsa_key_pair<P: AsRef<Path>>(
     // 1. Generate RSA key pair with specified bit length
     // 2. Save private key to file in PEM format (PKCS#8)
     // 3. Save public key to file in PEM format
+    info!("Generating RSA key pair with {} bits...", length);
     let mut rng = OsRng;
     let private_key =
         RsaPrivateKey::new(&mut rng, length).context("Failed to generate RSA private key")?;
+    debug!("RSA private key generated");
+
     let public_key = RsaPublicKey::from(&private_key);
+    debug!("RSA public key derived from private key");
 
     let private_pem = private_key
         .to_pkcs8_pem(LineEnding::LF)
         .context("Failed to encode private key to PEM")?;
     fs::write(&private_key_file, private_pem.as_bytes())
         .context("Failed to write private key file")?;
+    info!("Private key saved to: {}", private_key_file.as_ref().display());
 
     let public_pem = public_key
         .to_public_key_pem(LineEnding::LF)
         .context("Failed to encode public key to PEM")?;
     fs::write(&public_key_file, public_pem.as_bytes())
         .context("Failed to write public key file")?;
+    info!("Public key saved to: {}", public_key_file.as_ref().display());
 
     Ok(())
 }
