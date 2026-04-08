@@ -1,5 +1,7 @@
 [workspace]
 members = [
-  "exercise2"
+  "exercise2",
+  "exercise3",
+  "exercise4"
 ]
 resolver = "3"

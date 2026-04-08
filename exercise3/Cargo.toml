@@ -1,0 +1,10 @@
+[package]
+name = "exercise3"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+aes-gcm = "0.10"
+base64 = "0.21"
+rand = "0.8"
+anyhow = "1.0"

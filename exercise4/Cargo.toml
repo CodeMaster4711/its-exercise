@@ -1,0 +1,12 @@
+[package]
+name = "exercise4"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rsa = "0.9"
+sha2 = "0.10"
+rand = "0.8"
+anyhow = "1.0"
+base64 = "0.21"
+pem = "3.0"
