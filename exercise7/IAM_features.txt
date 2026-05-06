@@ -1,0 +1,7 @@
+Research the features of the IAM Solutions on the websites of IAM providers to understand
+the security procedures offered.
+
+- Adaptive and Phish-Resistant Authentication
+- Identity Governance and Administration (IGA)
+- Machine and Non-Human Identity (NHI) Security
+- Identity Threat Detection and Response (ITDR)
